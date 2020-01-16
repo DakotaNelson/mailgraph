@@ -1,0 +1,5 @@
+decorator==4.4.1
+mailbox==0.4
+networkx==2.4
+python-dateutil==2.8.1
+six==1.14.0
