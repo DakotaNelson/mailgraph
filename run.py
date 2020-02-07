@@ -1,5 +1,6 @@
 import re
 from dateutil import parser as dateParser
+import datetime
 import mailbox
 import networkx as nx
 
@@ -52,7 +53,10 @@ def parseAddress(s):
 
     return outVal
 
-G = nx.MultiDiGraph()
+# the "mode" thing is just a static attribute on the graph that Gephi looks for
+# to be able to have graphs that change over time (... are dynamic)
+G = nx.MultiDiGraph(mode="dynamic")
+
 inboxes = ['data/Inbox.mbox']
 for toProcess in inboxes:
     print("[*] Opening {} for processing.".format(toProcess))
@@ -73,19 +77,30 @@ for toProcess in inboxes:
             msgFrom = parseAddress(message['from'])
             msgTo = parseAddress(message['to'])
 
+            # NOTE this is a semi-important default!
+            defaultTime = datetime.datetime.now() - datetime.timedelta(days=365*5)
+            # I do not care about leap years, it's fine
+
             if message['date'] is not None:
                 msgDate = dateParser.parse(message['date'], tzinfos=tzinfos)
-                msgDateISO = msgDate.isoformat()
             else:
-                msgDate = ""
+                msgDate = defaultTime
+            msgDateISO = msgDate.isoformat()
 
-            msgSubject = message['subject']
-            if msgSubject is None:
-                msgSubject = "(none)"
+            # this seems to make Gephi unhappy for some reason
+            # msgSubject = message['subject']
+            # if msgSubject is None:
+            #     msgSubject = "(none)"
 
             for recipient in msgTo:
                 for sender in msgFrom:
-                    G.add_edge(sender, recipient, datetime=msgDateISO, startopen=msgDate.timestamp())
+                    G.add_edge(
+                        sender,
+                        recipient,
+                        datetime=msgDateISO,
+                        start=msgDate.timestamp(),
+                        mode="dynamic"
+                    )
     finally:
         inbox.close()
 
