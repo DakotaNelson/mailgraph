@@ -27,18 +27,15 @@ def parseAddress(s):
     # they mess up the comma-separation when we split the addresses
     quotedName = re.compile('".+?(,).+?"')
 
-    # if in the format "John Doe <jdoe@example.com>" extract just the part
-    # between the brackets
-    bracketField = re.compile("\<(.*)\>")
-
     # if s is none, tag it as a string else things get weird
     if s is None:
         s = "(unknown)"
 
+    # lowercase everything to prevent capitalization-based duplicates
     s = s.lower()
     # remove commas in quoted blocks - e.g. "Doe, John" <jdoe@example.com>
     s = re.sub(quotedName, '', s)
-    # if it's in the form email1@example.com, email2@example.com, then
+    # if the comma is in the form email1@example.com, email2@example.com, then
     # we need to split it up so that each email gets its own list element
     if ',' in s:
         s = s.strip().split(',')
@@ -48,6 +45,9 @@ def parseAddress(s):
         s = [s]
 
     outVal = []
+    # if in the format "John Doe <jdoe@example.com>" extract just the part
+    # between the brackets
+    bracketField = re.compile("\<(.*)\>")
     for element in s:
         # pull any emails in brackets out - so e.g. the next two lines should
         # come out to be equivalent:
@@ -118,3 +118,4 @@ for toProcess in inboxes:
 
 print("[*] Writing out GEXF file...")
 nx.write_gexf(G, args.output_file, prettyprint=False)
+print("[*] Done writing {}".format(args.output_file))
