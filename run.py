@@ -1,11 +1,21 @@
 import re
+import argparse
 from dateutil import parser as dateParser
 import datetime
 import mailbox
 import networkx as nx
 
+parser = argparse.ArgumentParser(description='Parse mbox files into graph \
+        files readable by Gephi or other graph analysis tools.')
+
+parser.add_argument('--output-file', '-o', default='graph.gexf')
+parser.add_argument('input_files', nargs='+')
+# TODO include a flag to pseudonynomize the output
+
 # you can add time zones here as "time zone code": seconds offset from UTC
 tzinfos = {"CDT": -18000}
+
+args = parser.parse_args()
 
 def parseAddress(s):
     # given a string that is the value of a to: or from: field,
@@ -57,9 +67,11 @@ def parseAddress(s):
 # to be able to have graphs that change over time (... are dynamic)
 G = nx.MultiDiGraph(mode="dynamic")
 
-inboxes = ['data/Inbox.mbox']
+inboxes = args.input_files
 for toProcess in inboxes:
     print("[*] Opening {} for processing.".format(toProcess))
+    # TODO: put something here to check that 'toProcess' exists?
+    # right now if it doesn't exist it almost-silently skips
     inbox = mailbox.mbox(toProcess)
 
     inbox.lock() # don't want anyone messing with it while we parse
@@ -105,4 +117,4 @@ for toProcess in inboxes:
         inbox.close()
 
 print("[*] Writing out GEXF file...")
-nx.write_gexf(G, 'graph.gexf', prettyprint=False)
+nx.write_gexf(G, args.output_file, prettyprint=False)
