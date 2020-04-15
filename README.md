@@ -4,6 +4,8 @@ Build a GEFX graph file of who has sent mail to whom.
 Usage
 -----
 
+First, get MBOX-formatted files of the mailbox(es) you want to examine. This can usually be accomplished by googling with the term "export mbox" and whatever mail client you use. Then, install the dependencies for the script and pass it the files you want to examine:
+
 ```
 virtualenv --python=python3 venv
 source venv/bin/activate
